@@ -1,11 +1,11 @@
 {
-  "name": "おとみち — 音楽理論をすき間時間に",
+  "name": "おとみち — 自由派音楽理論のドリル",
   "short_name": "おとみち",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#EDF1FA",
-  "theme_color": "#EDF1FA",
+  "background_color": "#FCFCFC",
+  "theme_color": "#FCFCFC",
   "lang": "ja",
   "icons": [
     { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },

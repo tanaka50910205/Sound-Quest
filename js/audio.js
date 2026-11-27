@@ -64,6 +64,59 @@ const Sound = (() => {
     });
   }
 
+  // ドラム（リズム編用）：k=キック s=スネア h=ハイハット H=強いハイハット
+  let noiseBuf = null;
+  function noise() {
+    if (!noiseBuf) {
+      noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 0.5, ctx.sampleRate);
+      const d = noiseBuf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    }
+    const src = ctx.createBufferSource();
+    src.buffer = noiseBuf;
+    playing.push(src);
+    return src;
+  }
+  function drum(kind, t) {
+    const g = ctx.createGain();
+    g.connect(master);
+    if (kind === 'k') {
+      const o = ctx.createOscillator();
+      o.frequency.setValueAtTime(140, t);
+      o.frequency.exponentialRampToValueAtTime(42, t + 0.18);
+      g.gain.setValueAtTime(0.9, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+      o.connect(g); o.start(t); o.stop(t + 0.4);
+      playing.push(o);
+    } else if (kind === 's') {
+      const n = noise(), bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass'; bp.frequency.value = 1800; bp.Q.value = 0.8;
+      g.gain.setValueAtTime(0.5, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+      n.connect(bp); bp.connect(g); n.start(t); n.stop(t + 0.25);
+      const o = ctx.createOscillator(), og = ctx.createGain();
+      o.frequency.value = 190; og.gain.setValueAtTime(0.25, t); og.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+      o.connect(og); og.connect(master); o.start(t); o.stop(t + 0.12);
+      playing.push(o);
+    } else {
+      const n = noise(), hp = ctx.createBiquadFilter();
+      hp.type = 'highpass'; hp.frequency.value = 7000;
+      g.gain.setValueAtTime(kind === 'H' ? 0.32 : 0.14, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+      n.connect(hp); hp.connect(g); n.start(t); n.stop(t + 0.07);
+    }
+  }
+
+  // ドラムのパターンを鳴らす。steps: [['k','h'], ['h'], ...]、stepSec: 1コマの長さ
+  function beat(steps, stepSec, opts = {}) {
+    if (!init()) return 0;
+    stop();
+    const s = stepSec * (opts.slow ? 1.4 : 1);
+    let t = ctx.currentTime + 0.05;
+    steps.forEach((st) => { (st || []).forEach((k) => drum(k, t)); t += s; });
+    return (t - ctx.currentTime) * 1000;
+  }
+
   function stop() {
     playing.forEach((o) => { try { o.stop(); } catch (e) { /* もう止まっている */ } });
     playing = [];
@@ -100,5 +153,5 @@ const Sound = (() => {
     else { tone(52, t, 0.4, 0.18); tone(51, t + 0.12, 0.5, 0.16); }
   }
 
-  return { init, play, note, cue, stop, setVolume };
+  return { init, play, beat, note, cue, stop, setVolume };
 })();
