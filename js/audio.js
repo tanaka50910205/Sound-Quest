@@ -3,6 +3,15 @@ const Sound = (() => {
   let ctx = null;
   let master = null;
   let volume = 0.7;
+  // 音の鳴らし方
+  //   'mix'  : ほかのアプリの音楽と一緒に鳴らす（効果音あつかい）。マナースイッチがオンだと鳴らない
+  //   'solo' : マナースイッチがオンでも鳴らす（再生あつかい）。かわりに、流れている音楽は止まる
+  let mode = 'mix';
+  function applySession() {
+    try {
+      if (navigator.audioSession) navigator.audioSession.type = mode === 'mix' ? 'ambient' : 'playback';
+    } catch (e) { /* 対応していない端末では何もしない */ }
+  }
   let playing = [];
 
   // ----- iPhone で音を出すための準備 -----
@@ -38,9 +47,7 @@ const Sound = (() => {
   }
 
   function create() {
-    try {
-      if (navigator.audioSession) navigator.audioSession.type = 'playback';
-    } catch (e) { /* 対応していない端末では何もしない */ }
+    applySession();
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return null;
     ctx = new AC();
@@ -61,7 +68,7 @@ const Sound = (() => {
   let unlocked = false;
   function unlock() {
     if (!ctx && !create()) return;
-    playSilentElement();
+    if (mode === 'solo') playSilentElement(); // 音楽と一緒に鳴らすときは使わない（使うと音楽が止まる）
     wake();
     // 無音を1つ鳴らして、Web Audio の鍵を開ける
     try {
@@ -80,6 +87,12 @@ const Sound = (() => {
     if (!ctx && !create()) return null;
     wake();
     return ctx;
+  }
+
+  function setMode(m) {
+    mode = m === 'solo' ? 'solo' : 'mix';
+    applySession();
+    if (mode === 'mix' && silentEl) { try { silentEl.pause(); } catch (e) { /* 何もしない */ } }
   }
 
   function setVolume(v) {
@@ -210,5 +223,5 @@ const Sound = (() => {
   }
 
   const state = () => (ctx ? ctx.state : 'none');
-  return { init, unlock, state, play, beat, note, cue, stop, setVolume };
+  return { init, unlock, state, play, beat, note, cue, stop, setVolume, setMode };
 })();

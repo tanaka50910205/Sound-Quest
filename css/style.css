@@ -337,6 +337,7 @@ mark { background: linear-gradient(transparent 0, var(--marker) 0); color: inher
 .kv td:last-child { text-align: right; font-family: var(--f-en); font-size: 18px; }
 .set { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); font-size: 15px; }
 .set label { flex: 1; }
+.set-s { display: block; font-size: 11px; color: var(--ink-3); line-height: 1.5; margin-top: 2px; }
 input[type=range] { width: 50%; accent-color: var(--btn); }
 .seg { display: flex; border: 1px solid var(--line-2); border-radius: 4px; overflow: hidden; }
 .seg button { padding: 6px 12px; font-size: 12px; color: var(--ink-2); }

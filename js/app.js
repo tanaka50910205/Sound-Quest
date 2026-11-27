@@ -45,7 +45,7 @@
   const fresh = () => ({
     xp: 0, days: {}, streak: 0, lastDay: null,
     progress: {}, missed: {}, seen: {}, answered: 0, correct: 0, lessons: 0,
-    settings: { vol: 0.7, theme: 'auto', goal: 30 }
+    settings: { vol: 0.7, theme: 'auto', goal: 30, sound: 'mix' }
   });
   let S = fresh();
   try {
@@ -68,6 +68,7 @@
   }
   applyTheme();
   Sound.setVolume(S.settings.vol);
+  Sound.setMode(S.settings.sound);
 
   // ===== 進み具合 =====
   const unitOf = (id) => UNITS.find((u) => u.id === id);
@@ -278,6 +279,7 @@
       <div class="band"><img class="qg" src="${SQA.q}" alt="Q"><span class="en">2.</span>設定</div>
       <div class="set"><label for="vol">音量</label><input id="vol" type="range" min="0" max="1" step="0.05" value="${S.settings.vol}"></div>
       <div class="set"><label>1日の目標（XP）</label>${seg('goal', [[20, '20'], [30, '30'], [50, '50']])}</div>
+      <div class="set"><label>音の鳴らし方<small class="set-s">${S.settings.sound === 'solo' ? 'マナースイッチがオンでも鳴る。流れている音楽は止まる' : '流れている音楽と一緒に鳴る。マナースイッチがオンだと鳴らない'}</small></label>${seg('sound', [['mix', '音楽と一緒に'], ['solo', 'マナーでも鳴らす']])}</div>
       <div class="set"><label>画面</label>${seg('theme', [['auto', '自動'], ['light', '明るい'], ['dark', '暗い']])}</div>
       <div class="set"><label>音のテスト</label><button class="tlink" data-soundtest>ドミソを鳴らす</button></div>
       <div class="set"><label>記録を消す</label><button class="tlink" data-reset>リセット</button></div>
@@ -646,7 +648,7 @@
     root.querySelectorAll('[data-set]').forEach((b) => b.onclick = () => {
       const k = b.dataset.set;
       S.settings[k] = k === 'goal' ? +b.dataset.val : b.dataset.val;
-      save(); applyTheme(); render();
+      save(); applyTheme(); Sound.setMode(S.settings.sound); render();
     });
     root.querySelectorAll('[data-soundtest]').forEach((b) => b.onclick = () => {
       Sound.unlock();
