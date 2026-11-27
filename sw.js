@@ -1,5 +1,5 @@
 // おとみち — オフラインでも開けるようにする
-const CACHE = 'otomichi-v4';
+const CACHE = 'otomichi-v5';
 const FILES = ['./', 'index.html', 'css/style.css', 'js/audio.js', 'js/content.js', 'js/assets.js', 'js/app.js', 'manifest.webmanifest', 'icons/icon.svg', 'icons/apple-touch-icon.png'];
 
 self.addEventListener('install', (e) => {

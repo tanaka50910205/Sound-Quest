@@ -301,7 +301,7 @@
       <div class="set"><label for="vol">音量</label><input id="vol" type="range" min="0" max="1" step="0.05" value="${S.settings.vol}"></div>
       <div class="set"><label>1日の目標（XP）</label>${seg('goal', [[20, '20'], [30, '30'], [50, '50']])}</div>
       <div class="set"><label>画面</label>${seg('theme', [['auto', '自動'], ['light', '明るい'], ['dark', '暗い']])}</div>
-      <div class="set"><label>音が鳴らないとき</label><span style="font-size:12px;color:var(--ink-2)">マナースイッチと音量を確認</span></div>
+      <div class="set"><label>音のテスト</label><button class="tlink" data-soundtest>ドミソを鳴らす</button></div>
       <div class="set"><label>記録を消す</label><button class="tlink" data-reset>リセット</button></div>
     </main>`;
   }
@@ -614,6 +614,11 @@
       const k = b.dataset.set;
       S.settings[k] = k === 'goal' ? +b.dataset.val : b.dataset.val;
       save(); applyTheme(); render();
+    });
+    root.querySelectorAll('[data-soundtest]').forEach((b) => b.onclick = () => {
+      Sound.unlock();
+      Sound.play([[60, 64, 67]], { gap: 1 });
+      setTimeout(() => { const st = Sound.state(); if (st !== 'running') toast(`音の準備ができていません（${st}）。もう一度押してください`); }, 400);
     });
     const rs = $('[data-reset]', root);
     if (rs) rs.onclick = () => {
