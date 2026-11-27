@@ -199,7 +199,7 @@ const GEN = {
 const UNITS = [
   // ----- 序論 -----
   {
-    id: 'i1', book: 'intro', title: '自由派音楽理論とは', sub: '禁則のない音楽理論',
+    id: 'i1', chapter: null, tags: ['自由派音楽理論', '禁則', '流派'], book: 'intro', title: '自由派音楽理論とは', sub: '禁則のない音楽理論',
     links: [['自由派音楽理論とは', 'https://soundquest.jp/about-limuth/'], ['音楽理論とは何か', SQ + 'intro/what-is-music-theory']],
     notes: [
       ['理論には流派がある', 'クラシック系、ジャズ系、ポピュラー系……。音楽理論は一枚岩ではなく、流派ごとに考え方も表記も違います。'],
@@ -219,7 +219,7 @@ const UNITS = [
 
   // ----- 準備編 -----
   {
-    id: 'p1', book: 'prep', title: '音を表す名前について', sub: 'ドレミ、ABC、イロハ',
+    id: 'p1', chapter: null, tags: ['異名同音', '嬰', 'オクターブ'], book: 'prep', title: '音を表す名前について', sub: 'ドレミ、ABC、イロハ',
     links: [['音を表す名前について', SQ + 'prerequisite/names']],
     notes: [
       ['3つの言語', 'ドレミ（イタリア語）、ABC（英語）、イロハ（日本語）。A＝イ＝ラ。アルファベットはドではなくラから始まります。ポピュラー音楽では英語を使うのが普通。'],
@@ -242,7 +242,7 @@ const UNITS = [
     ]
   },
   {
-    id: 'p2', book: 'prep', title: '音階の仕組み', sub: '全音と半音、レラティヴ',
+    id: 'p2', chapter: null, tags: ['半音', '全音', 'レラティヴ', '中心音'], book: 'prep', title: '音階の仕組み', sub: '全音と半音、レラティヴ',
     links: [['音階の仕組み ❶全音と半音', SQ + 'prerequisite/scale-2'], ['音階の仕組み ❷段差にすべてを', SQ + 'prerequisite/scale-3'], ['中心音と調性', SQ + 'prerequisite/tonality']],
     notes: [
       ['白鍵の段差はデコボコ', '鍵盤の隣どうし（黒鍵も含む）が「半音」、その2倍が「全音」。ミとファ、シとドのあいだには黒鍵がないので、ここだけ半音です。'],
@@ -264,7 +264,7 @@ const UNITS = [
     ]
   },
   {
-    id: 'p3', book: 'prep', title: '度数と音程', sub: '音の距離をはかる',
+    id: 'p3', chapter: null, tags: ['度数', '音程', '音高'], book: 'prep', title: '度数と音程', sub: '音の距離をはかる',
     links: [['度数と音程', SQ + 'prerequisite/interval-1']],
     notes: [
       ['数え方はカレンダーと同じ', 'スタートとゴールの音も数に入れます。ド・レ・ミで「3度」。8/8〜8/15のお休みが8連休なのと同じしくみで、ドとドは「1度」。'],
@@ -287,7 +287,7 @@ const UNITS = [
     ]
   },
   {
-    id: 'p4', book: 'prep', title: '調(キー)と五度圏', sub: '調号と五度圏',
+    id: 'p4', chapter: null, tags: ['キー', '調号', '五度圏', '転調'], book: 'prep', title: '調(キー)と五度圏', sub: '調号と五度圏',
     links: [['調(キー)と調号', SQ + 'prerequisite/key'], ['五度圏', SQ + 'prerequisite/co5th']],
     notes: [
       ['キー（調）', '曲が主に使っている音階の情報がキー。曲の途中でキーが切り替わることを「転調」といいます。'],
@@ -309,7 +309,7 @@ const UNITS = [
 
   // ----- メロディ編 -----
   {
-    id: 'm1', book: 'melody', title: '階名と半音の傾性', sub: 'シ→ドの解決、四七抜き',
+    id: 'm1', chapter: 'I章:構造の分解', tags: ['階名', '導音', '解決', '四七抜き音階'], book: 'melody', title: '階名と半音の傾性', sub: 'シ→ドの解決、四七抜き',
     links: [['音名と階名', SQ + 'melody/melody-mv1/scale-degree-and-solfa'], ['半音進行と傾性', SQ + 'melody/melody-mv1/tendency'], ['四七抜き音階', SQ + 'melody/melody-mv1/47nuki']],
     notes: [
       ['階名としてのドレミ', 'キーの中心音を「ド」と呼ぶ使い方が階名。Gメジャーキーならソの音を「ド」と読みます。キーが変わっても同じ見方でメロディを語れます。'],
@@ -330,7 +330,7 @@ const UNITS = [
     ]
   },
   {
-    id: 'm2', book: 'melody', title: '三つの短音階', sub: 'ナチュラル、ハーモニック、メロディック',
+    id: 'm2', chapter: 'III章:音階の探究', tags: ['ナチュラルマイナー', 'ハーモニックマイナー', 'メロディックマイナー'], book: 'melody', title: '三つの短音階', sub: 'ナチュラル、ハーモニック、メロディック',
     links: [['三つの短音階', SQ + 'melody/melody-mv3/minor-scales']],
     notes: [
       ['ナチュラルマイナー', '自然的短音階。全半全全半全全の、いちばん素直なマイナースケール。Aから始めると白鍵だけ。'],
@@ -352,7 +352,7 @@ const UNITS = [
 
   // ----- コード編 -----
   {
-    id: 'c1', book: 'chord', title: '六つの基調和音', sub: '三度堆積とダイアトニックコード',
+    id: 'c1', chapter: 'I章:基本の体系', tags: ['三度堆積', 'ダイアトニックコード', '六つの基調和音'], book: 'chord', title: '六つの基調和音', sub: '三度堆積とダイアトニックコード',
     links: [['六つの基調和音 ❶', SQ + 'chord/chord-mv1/prime-chords'], ['メジャーコードとマイナーコード', SQ + 'chord/chord-mv1/major-minor']],
     notes: [
       ['お団子重ね', '音階に沿ってひとつ飛ばしに積むと、音は3度間隔で並びます。これが「三度堆積」。3つ積めば三和音（トライアド）、4つで四和音。'],
@@ -374,7 +374,7 @@ const UNITS = [
     ]
   },
   {
-    id: 'c2', book: 'chord', title: 'ディグリーネーム', sub: 'コードに番号をふる',
+    id: 'c2', chapter: 'I章:基本の体系', tags: ['ディグリーネーム', '相対'], book: 'chord', title: 'ディグリーネーム', sub: 'コードに番号をふる',
     links: [['ディグリーネーム', SQ + 'chord/chord-mv1/degree-names'], ['六つの基調和音 ❷五度圏の活用', SQ + 'chord/chord-mv1/prime-chords-2']],
     notes: [
       ['絶対と相対', 'キーを2つ上げた曲は「同じ曲」？ コードネームで見れば別物、相対的な位置で見れば同じ。この相対的な見方をするのがディグリーネームです。'],
@@ -394,7 +394,7 @@ const UNITS = [
     ]
   },
   {
-    id: 'c3', book: 'chord', title: 'スリーコードと代理コード', sub: 'メジャー3人衆とマイナー3人衆',
+    id: 'c3', chapter: 'I章:基本の体系', tags: ['スリーコード', '仲良しペア', 'リハーモナイズ'], book: 'chord', title: 'スリーコードと代理コード', sub: 'メジャー3人衆とマイナー3人衆',
     links: [['スリーコードと代理コード', SQ + 'chord/chord-mv1/chord-substitution']],
     notes: [
       ['2つの3人衆', '六つの基調和音は、メジャー群（I・IV・V）とマイナー群（VIm・IIm・IIIm）に分かれます。どちらもリーダーの5度上と5度下にお供がいる、同じフォーメーション。'],
@@ -415,7 +415,7 @@ const UNITS = [
     ]
   },
   {
-    id: 'c4', book: 'chord', title: 'コードの機能とケーデンス', sub: 'T・D・S と終止',
+    id: 'c4', chapter: 'I章:基本の体系', tags: ['トニック', 'ドミナント', 'サブドミナント', 'ケーデンス'], book: 'chord', title: 'コードの機能とケーデンス', sub: 'T・D・S と終止',
     links: [['コードの機能(機能和声)', SQ + 'chord/chord-mv1/chord-functions'], ['ケーデンス', SQ + 'chord/chord-mv1/cadence']],
     notes: [
       ['3つの機能', 'I＝トニック（T）は着地・安定。V＝ドミナント（D）は緊張のピーク。IV＝サブドミナント（S）は穏やかに動き出す展開役。'],
@@ -437,7 +437,7 @@ const UNITS = [
     ]
   },
   {
-    id: 'c5', book: 'chord', title: 'クオリティ・チェンジ', sub: 'メジャーとマイナーを入れ替える',
+    id: 'c5', chapter: 'I章:基本の体系', tags: ['クオリティ', 'クオリティ・チェンジ'], book: 'chord', title: 'クオリティ・チェンジ', sub: 'メジャーとマイナーを入れ替える',
     links: [['クオリティ・チェンジ', SQ + 'chord/chord-mv1/quality-change']],
     notes: [
       ['コードのクオリティ', 'メジャー・マイナーといったコードのタイプを「クオリティ」と呼びます。ルートはそのまま、真ん中の音だけを入れ替えるのがクオリティ・チェンジ。'],
@@ -457,7 +457,7 @@ const UNITS = [
     ]
   },
   {
-    id: 'c6', book: 'chord', title: '王道進行と文化の差', sub: 'ジャンルで好みが変わる',
+    id: 'c6', chapter: 'I章:基本の体系', tags: ['王道進行', '2-5-1', '1-5-6-4'], book: 'chord', title: '王道進行と文化の差', sub: 'ジャンルで好みが変わる',
     links: [['王道進行と文化の差', SQ + 'chord/nexus-system/nx-royalroads']],
     notes: [
       ['J-Popの王道', '4-5-3-6（いわゆる王道進行）、パッヘルベルのカノンの進行、そして暗い曲調の王道 6-4-5-1。'],
@@ -479,7 +479,7 @@ const UNITS = [
     ]
   },
   {
-    id: 'c7', book: 'chord', title: '拡張と借用', sub: 'セブンス、二次ドミナント、パラレル・マイナー',
+    id: 'c7', chapter: 'II章:拡張と借用', tags: ['セブンスコード', '二次ドミナント', 'パラレル・マイナー'], book: 'chord', title: '拡張と借用', sub: 'セブンス、二次ドミナント、パラレル・マイナー',
     links: [['セブンスコード', SQ + 'chord/chord-mv2/seventh-chords'], ['二次ドミナント', SQ + 'chord/chord-mv2/secondary-dominant'], ['パラレル・マイナー ❶', SQ + 'chord/chord-mv2/parallel-minor']],
     notes: [
       ['セブンスコード', '三和音にもうひとつ積んだ四和音。CM7（ド・ミ・ソ・シ）はやわらかく、C7（ド・ミ・ソ・シ♭）は緊張があって次へ進みたくなる響き。'],
@@ -502,7 +502,7 @@ const UNITS = [
 
   // ----- リズム編 -----
   {
-    id: 'r1', book: 'rhythm', title: 'リズムの基本', sub: '拍・ビート・バックビート',
+    id: 'r1', chapter: 'I章:リズムの基本', tags: ['3点セット', 'BPM', '8ビート', 'バックビート'], book: 'rhythm', title: 'リズムの基本', sub: '拍・ビート・バックビート',
     links: [['リズム理論をはじめる', SQ + 'rhythm/rhythm-mv1/about-rhythm-theory'], ['拍と拍子', SQ + 'rhythm/rhythm-mv1/time-and-bar'], ['ビートとサブディビジョン', SQ + 'rhythm/rhythm-mv1/8beat-and-16beat'], ['強拍・弱拍とバックビート', SQ + 'rhythm/rhythm-mv1/strong-beat-weak-beat']],
     notes: [
       ['ドラムの3点セット', 'キック（バスドラム）、スネア、ハイハット。この3つがリズムの骨組みです。'],
