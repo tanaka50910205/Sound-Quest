@@ -8,6 +8,7 @@
   "theme_color": "#FCFCFC",
   "lang": "ja",
   "icons": [
+    { "src": "https://soundquest.jp/files/uploads/2023/07/cropped-sq-favicon-2023-192x192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
     { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }

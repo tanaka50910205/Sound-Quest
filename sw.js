@@ -1,6 +1,6 @@
 // おとみち — オフラインでも開けるようにする
-const CACHE = 'otomichi-v3';
-const FILES = ['./', 'index.html', 'css/style.css', 'js/audio.js', 'js/content.js', 'js/app.js', 'manifest.webmanifest', 'icons/icon.svg', 'icons/apple-touch-icon.png'];
+const CACHE = 'otomichi-v4';
+const FILES = ['./', 'index.html', 'css/style.css', 'js/audio.js', 'js/content.js', 'js/assets.js', 'js/app.js', 'manifest.webmanifest', 'icons/icon.svg', 'icons/apple-touch-icon.png'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)).then(() => self.skipWaiting()));
@@ -12,7 +12,8 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
   if (e.request.method !== 'GET') return;
-  if (url.hostname.includes('fonts.g')) {
+  // フォントと SoundQuest の画像は「キャッシュ優先」（一度見ればオフラインでも出る）
+  if (url.hostname.includes('fonts.g') || (url.hostname === 'soundquest.jp' && url.pathname.startsWith('/files/'))) {
     e.respondWith(caches.match(e.request).then((hit) => hit || fetch(e.request).then((res) => {
       const copy = res.clone(); caches.open(CACHE).then((c) => c.put(e.request, copy)); return res;
     })));

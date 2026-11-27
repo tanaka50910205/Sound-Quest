@@ -119,14 +119,10 @@
     bind(app);
   }
 
-  function logo() {
-    const cols = ['#6F564A', '#EA5506', '#2CA9E1', '#F8B500', '#808F7C'];
-    return `<svg viewBox="0 0 26 26" aria-hidden="true">${cols.map((c, i) => `<rect x="${1 + i * 5}" y="${22 - (i + 2) * 3.2}" width="3.4" height="${(i + 2) * 3.2}" rx="1.7" fill="${c}"/>`).join('')}</svg>`;
-  }
   function header() {
     const st = liveStreak();
     return `<header class="header">
-      <button class="logo" data-nav="home" aria-label="目次へ">${logo()}<span>おとみち</span></button>
+      <button class="logo" data-nav="home" aria-label="目次へ"><img class="sq-logo lt" src="${SQA.logo}" alt="SoundQuest"><img class="sq-logo dk" src="${SQA.logoWhite}" alt="SoundQuest"><span class="drill">ドリル</span></button>
       <span class="hstat ${st && S.lastDay === dayKey() ? 'on' : ''}" aria-label="連続${st}日">${ic('flame')}${st}</span>
       <span class="hstat heart ${S.hearts ? '' : 'zero'}" aria-label="ハート${S.hearts}">${ic('heart')}${S.hearts}</span>
       <button class="menu-btn" data-menu aria-label="メニュー">${ic('menu')}</button>
@@ -161,13 +157,10 @@
   // --- 目次（トップ） ---
   function viewHome() {
     const cur = currentItem();
-    let seed = 7;
-    const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
-    const stars = Array.from({ length: 34 }, () => `<i class="star" style="left:${(rnd() * 100).toFixed(1)}%;top:${(rnd() * 100).toFixed(1)}%;opacity:${(0.3 + rnd() * 0.6).toFixed(2)}"></i>`).join('');
     const knobs = Object.keys(BOOKS).map((bk) => {
       const r = bookRatio(bk);
       return `<button class="knob-b b-${BOOKS[bk].color}" data-jump="${bk}" aria-label="${BOOKS[bk].name} ${Math.round(r * 100)}%">
-        <small>${EN[bk]}</small><span class="knob"><i style="transform:rotate(${180 - 135 + 270 * r}deg)"></i></span><em>${Math.round(r * 100)}%</em></button>`;
+        <small>${EN[bk]}</small><img class="knob-img" src="${SQA.knob[bk]}" alt="" style="transform:rotate(${-270 + 270 * r}deg)"><em>${Math.round(r * 100)}%</em></button>`;
     }).join('');
     const g = S.settings.goal, x = todayXp();
     const books = Object.keys(BOOKS).map((bk) => {
@@ -179,7 +172,7 @@
         const u = it.kind === 'unit' ? unitOf(it.id) : null;
         if (u && u.chapter && u.chapter !== lastCh) {
           if (rows.length) rows.push('</div>');
-          rows.push(`<div class="chapter"><span class="ch-ic">${ic(b.icon)}</span>${esc(u.chapter)}</div><div class="list">`);
+          rows.push(`<div class="chapter"><img class="ch-av" src="${SQA.avatar[u.chapter]}" alt="">${esc(u.chapter)}</div><div class="list">`);
           lastCh = u.chapter;
         } else if (!rows.length) rows.push('<div class="list">');
         const open = isOpen(it), done = isDone(it), isCur = cur === it, p = prog(it.id);
@@ -196,7 +189,7 @@
         ${rows.join('')}
       </section>`;
     }).join('');
-    return `<section class="hero">${stars}<i class="moon"></i><h1>自由派音楽理論</h1><p>すき間時間に進めるドリル</p></section>
+    return `<section class="hero" style="background-image:url('${SQA.hero}')"><h1>自由派音楽理論</h1><p>すき間時間に進めるドリル</p></section>
       <div class="mixer">${knobs}</div>
       <div class="today">今日 <b>${x}</b> / ${g} XP<span class="meter"><i style="width:${Math.min(100, x / g * 100)}%"></i></span>XP合計 <b>${S.xp}</b></div>
       <main class="toc-page">${books}</main>`;
@@ -208,7 +201,7 @@
     const rows = [0, 1, 2].map((s) => {
       const done = p > s, open = isOpen(it) && p >= s;
       return `<div class="toc-row ${done ? 'done' : ''} ${open ? '' : 'locked'}">
-        <span class="n">${done ? '✓' : s + 1 + '.'}</span>
+        <span class="n">${done ? '✓' : `<img class="qg" src="${SQA.qDark}" alt="">${s + 1}.`}</span>
         <span class="t">レッスン${s + 1}<small>6問　${done ? 'クリア済み' : open ? 'つぎはここ' : 'まだ開いていません'}</small></span>
         ${open ? `<button class="cbtn sm" data-start="${u.id}:${s}">${done ? 'もう一度' : 'はじめる'}</button>` : ''}
       </div>`;
@@ -217,18 +210,18 @@
     const next = Math.min(p, STEPS - 1);
     return `<main class="art b-${b.color}">
       <div class="crumb"><button data-nav="home">目次</button>›<span>${b.name}</span>${u.chapter ? `›<span>${esc(u.chapter)}</span>` : ''}</div>
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">${bdg(it)}</div>
+      <div class="u-top">${bdg(it)}<img class="ch-av" src="${SQA.avatar[u.chapter || it.book]}" alt=""></div>
       <h1>${esc(u.title)}</h1>
       <div class="share"><a class="lbtn" href="${u.links[0][1]}" target="_blank" rel="noopener">${ic('book')}SoundQuest で読む</a></div>
       <div class="hr"></div>
       <div class="chips">${u.tags.map((t) => `<span class="chip">${esc(t)}</span>`).join('')}</div>
       <div class="tocbox"><p>レッスン</p>${rows}</div>
       ${S.hearts ? '' : heartsNote()}
-      <div class="band"><span class="en">1.</span>ポイント</div>
+      <div class="band"><img class="qg" src="${SQA.q}" alt="Q"><span class="en">1.</span>ポイント</div>
       <h3>${esc(n1[0])}</h3><p>${hl(n1[1], u.tags)}</p>
       <h3>${esc(n2[0])}</h3><p>${hl(n2[1], u.tags)}</p>
       <div class="checkpoint"><h5>${ic('signpost')}Check Point</h5><p><b>${esc(n3[0])}</b>　${hl(n3[1], u.tags)}</p></div>
-      <div class="band"><span class="en">2.</span>記事を読む</div>
+      <div class="band"><img class="qg" src="${SQA.q}" alt="Q"><span class="en">2.</span>記事を読む</div>
       <div class="reads">${u.links.map(([t, url]) => `<a href="${url}" target="_blank" rel="noopener">${ic('ext')}<span>${esc(t)}</span><em>SoundQuest</em></a>`).join('')}</div>
       ${isOpen(it) && S.hearts ? `<div class="continue"><button class="cbtn" data-start="${u.id}:${next}">${isDone(it) ? 'もう一度' : `レッスン${next + 1}へ`}${ic('signpost')}</button></div>` : ''}
     </main>`;
@@ -269,7 +262,7 @@
       <h1>復習</h1>
       <div class="hr"></div>
       <p>まちがえた問題を中心に出します。復習を終えると<mark>ハートが1つ回復</mark>します。</p>
-      <div class="band"><span class="en">1.</span>苦手な問題</div>
+      <div class="band"><img class="qg" src="${SQA.q}" alt="Q"><span class="en">1.</span>苦手な問題</div>
       ${ids.length ? list : `<p style="color:var(--ink-2)">${doneAny ? 'まちがえた問題はありません。クリアしたところから出します。' : 'まずは目次から、レッスンをひとつ進めてみましょう。'}</p>`}
       <div class="continue" style="display:grid;gap:16px;justify-items:start">
         <button class="cbtn" data-review ${doneAny || ids.length ? '' : 'disabled'}>復習をはじめる${ic('signpost')}</button>
@@ -302,9 +295,9 @@
         <tr><td>クリアしたレッスン</td><td>${lessonsDone} / ${UNITS.length * STEPS}</td></tr>
         <tr><td>正解率</td><td>${acc}%</td></tr>
       </table>
-      <div class="band"><span class="en">1.</span>この7日間</div>
+      <div class="band"><img class="qg" src="${SQA.q}" alt="Q"><span class="en">1.</span>この7日間</div>
       <div class="chart">${days.join('')}</div>
-      <div class="band"><span class="en">2.</span>設定</div>
+      <div class="band"><img class="qg" src="${SQA.q}" alt="Q"><span class="en">2.</span>設定</div>
       <div class="set"><label for="vol">音量</label><input id="vol" type="range" min="0" max="1" step="0.05" value="${S.settings.vol}"></div>
       <div class="set"><label>1日の目標（XP）</label>${seg('goal', [[20, '20'], [30, '30'], [50, '50']])}</div>
       <div class="set"><label>画面</label>${seg('theme', [['auto', '自動'], ['light', '明るい'], ['dark', '暗い']])}</div>
@@ -416,7 +409,7 @@
         ${usesHearts() ? `<span class="hstat heart ${S.hearts ? '' : 'zero'}">${ic('heart')}${S.hearts}</span>` : ''}
       </div><div class="lbar"><i style="width:${L.solved / L.total * 100}%"></i></div></div>
       <div class="qwrap" id="qa">
-        <div class="qband"><span class="en">Q${L.n}.</span>${cur.retry ? 'もう一度' : kind}</div>
+        <div class="qband"><img class="qg" src="${SQA.q}" alt="Q"><span class="en">${L.n}.</span>${cur.retry ? 'もう一度' : kind}</div>
         <p class="qtext">${esc(q.q)}</p>
         ${body(q)}
       </div>
@@ -584,6 +577,7 @@
     const crumb = L.mode === 'lesson' ? `<span>${b.name}</span>›<span>${esc(u.title)}</span>` : `<span>${L.mode === 'gate' ? b.name : '復習'}</span>`;
     app.innerHTML = header() + `<main class="art b-${b.color}">
       <div class="crumb"><button data-nav="home">目次</button>›${crumb}</div>
+      <img class="dj" src="${SQA.dj}" alt="">
       <h1>${esc(title)}</h1>
       <table class="score-tbl"><tr><th>獲得XP</th><th>一発正解</th><th>時間</th></tr>
         <tr><td>+${xp}</td><td>${acc}%</td><td>${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}</td></tr></table>
