@@ -300,6 +300,33 @@ mark { background: linear-gradient(transparent 0, var(--marker) 0); color: inher
 .dj { display: block; width: 200px; max-width: 60%; margin: 0 auto 24px; }
 .art .dj + h1 { text-align: center; }
 
+/* インプット */
+.incard { margin-bottom: 8px; }
+.incard h3 { font-size: 20px; font-weight: 700; line-height: 1.5; margin: 4px 0 12px; }
+.incard p { font-size: 16px; line-height: 1.95; }
+.piano.mini { height: 112px; margin: 20px 0 8px; }
+.piano.mini .wkey, .piano.mini .bkey { cursor: pointer; }
+.demos { display: grid; gap: 8px; margin-top: 20px; }
+.demo { display: flex; align-items: center; gap: 12px; width: 100%; height: 48px; padding: 0 14px; background: var(--player); color: #fff; border-radius: 4px; box-shadow: 0 6px 16px -10px rgba(0,0,0,.6); text-align: left; }
+.demo .pb { width: 20px; display: grid; place-items: center; }
+.demo .pb .i { width: 14px; height: 14px; fill: #fff; stroke: none; }
+.demo .dl { flex: 1; font-size: 14px; }
+.demo .tm .i { width: 16px; height: 16px; color: #999; }
+.demo.on { background: color-mix(in srgb, var(--c) 55%, var(--player)); }
+.srclink { display: inline-flex; align-items: center; gap: 6px; margin-top: 28px; font-size: 13px; color: var(--ink-2); text-decoration: underline; text-underline-offset: 3px; }
+.srclink .i { width: 15px; height: 15px; }
+.in-nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.in-nav .cbtn { flex: 1; max-width: 260px; margin-left: auto; }
+.in-nav .lnk, .fbar .skip { font-size: 13px; color: var(--ink-2); text-decoration: underline; text-underline-offset: 3px; padding: 8px 4px; }
+.fbar .skip { display: block; margin: 8px auto 0; }
+.fb-more { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 10px; }
+.fb-more button, .fb-more a { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.fb-more .i { width: 15px; height: 15px; }
+.sheet-in { max-height: 78vh; overflow: auto; padding-bottom: 8px; }
+.sheet-in .qband { margin: 0 0 20px; font-size: 16px; }
+.sheet-in .incard + .incard { margin-top: 28px; }
+.sheet-in .cbtn { margin-top: 24px; }
+
 /* 記録 */
 .chart { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; align-items: end; height: 140px; margin-top: 8px; }
 .col { display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }

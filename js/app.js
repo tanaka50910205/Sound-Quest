@@ -48,7 +48,7 @@
   const fresh = () => ({
     xp: 0, days: {}, streak: 0, lastDay: null,
     hearts: MAX_HEARTS, heartTs: Date.now(),
-    progress: {}, missed: {}, answered: 0, correct: 0, lessons: 0,
+    progress: {}, missed: {}, seen: {}, answered: 0, correct: 0, lessons: 0,
     settings: { vol: 0.7, theme: 'auto', goal: 30 }
   });
   let S = fresh();
@@ -202,7 +202,7 @@
       const done = p > s, open = isOpen(it) && p >= s;
       return `<div class="toc-row ${done ? 'done' : ''} ${open ? '' : 'locked'}">
         <span class="n">${done ? '✓' : `<img class="qg" src="${SQA.qDark}" alt="">${s + 1}.`}</span>
-        <span class="t">レッスン${s + 1}<small>6問　${done ? 'クリア済み' : open ? 'つぎはここ' : 'まだ開いていません'}</small></span>
+        <span class="t">${esc(u.notes[s][0])}<small>レッスン${s + 1}　インプット＋問題　${done ? 'クリア済み' : open ? 'つぎはここ' : 'まだ開いていません'}</small></span>
         ${open ? `<button class="cbtn sm" data-start="${u.id}:${s}">${done ? 'もう一度' : 'はじめる'}</button>` : ''}
       </div>`;
     }).join('');
@@ -252,7 +252,7 @@
     const ids = Object.entries(S.missed).filter(([id]) => findItem(id)).sort((a, b) => b[1] - a[1]);
     const list = ids.slice(0, 12).map(([id, n]) => {
       const f = findItem(id);
-      const text = typeof f.item === 'string' ? '聞き取り：' + GEN[f.item]().q : f.item.q;
+      const text = f.item.g ? '聞き取り：' + GEN[f.item.g]().q : f.item.q;
       const it = itemOf(UNITS[f.u].id);
       return `<div class="miss b-${BOOKS[it.book].color}">${bdg(it)}<span>${esc(text)}</span><span class="cnt">${n}回ミス</span></div>`;
     }).join('');
@@ -337,8 +337,8 @@
   function makeQ(id) {
     const f = findItem(id);
     if (!f) return null;
-    const raw = typeof f.item === 'string' ? GEN[f.item]() : f.item;
-    const q = { id, u: f.u, book: UNITS[f.u].book, t: raw.t, q: raw.q, ex: raw.ex || '' };
+    const raw = f.item.g ? GEN[f.item.g]() : f.item;
+    const q = { id, u: f.u, part: f.item.p || 0, book: UNITS[f.u].book, t: raw.t, q: raw.q, ex: raw.ex || '' };
     if (raw.t === 'mcq') { q.o = shuffle(raw.o); q.a = q.o.indexOf(raw.o[0]); }
     else if (raw.t === 'listen') Object.assign(q, { o: raw.o.slice(), a: raw.a, play: raw.play, gap: raw.gap, beat: raw.beat, sec: raw.sec });
     else if (raw.t === 'key') q.a = raw.a.slice();
@@ -346,15 +346,17 @@
     return q;
   }
   const idsOf = (u) => UNITS[u].pool.map((_, i) => `${UNITS[u].id}:${i}`);
-  const notMcq = (id) => { const it = findItem(id).item; return typeof it === 'string' || it.t !== 'mcq'; };
+  const notMcq = (id) => { const it = findItem(id).item; return !!it.g || it.t !== 'mcq'; };
 
   function buildLesson(uid, s) {
     const u = unitIndex(uid);
-    let ids = shuffle(idsOf(u));
-    ids = ids.slice(s * 2).concat(ids.slice(0, s * 2));
-    const pick = ids.slice(0, 6);
-    if (!pick.some(notMcq)) { const alt = ids.find(notMcq); if (alt) pick[5] = alt; }
-    return { mode: 'lesson', id: uid, s, book: UNITS[u].book, items: shuffle(pick) };
+    const partOf = (id) => findItem(id).item.p || 0;
+    const now = shuffle(idsOf(u).filter((id) => partOf(id) === s));
+    const before = shuffle(idsOf(u).filter((id) => partOf(id) < s));
+    let pick = now.slice(0, s === 0 ? 6 : 4);
+    for (const id of before.concat(now.slice(pick.length))) { if (pick.length >= 6) break; if (!pick.includes(id)) pick.push(id); }
+    if (!pick.some(notMcq)) { const alt = now.concat(before).find(notMcq); if (alt) pick[pick.length - 1] = alt; }
+    return { mode: 'lesson', id: uid, s, book: UNITS[u].book, items: shuffle(pick), input: true };
   }
   function buildGate(gid) {
     const it = itemOf(gid);
@@ -365,7 +367,7 @@
     const opened = UNITS.map((_, i) => i).filter((i) => isOpen(itemOf(UNITS[i].id)));
     let pool = [];
     if (earOnly) {
-      opened.forEach((u) => UNITS[u].pool.forEach((it, i) => { if (typeof it === 'string') pool.push(`${UNITS[u].id}:${i}`); }));
+      opened.forEach((u) => UNITS[u].pool.forEach((it, i) => { if (it.g) pool.push(`${UNITS[u].id}:${i}`); }));
       pool = shuffle(pool);
       const base = pool.slice();
       while (base.length && pool.length < 6) pool.push(base[pool.length % base.length]);
@@ -385,15 +387,78 @@
     if (!plan.items.length) { toast('出せる問題がまだありません'); return; }
     if ((plan.mode === 'lesson' || plan.mode === 'gate') && !S.hearts) { toast(`ハートがありません。あと${nextHeartMin()}分で回復します`); return; }
     closeSheet();
-    L = { ...plan, queue: plan.items.map((id) => ({ id, q: makeQ(id), retry: false })), total: plan.items.length, solved: 0, i: 0, n: 0, firstTry: 0, mistakes: 0, start: Date.now(), sel: null, checked: false, from: route };
+    L = { ...plan, queue: plan.items.map((id) => ({ id, q: makeQ(id), retry: false })), total: plan.items.length, solved: 0, i: 0, n: 0, firstTry: 0, mistakes: 0, start: Date.now(), sel: null, checked: false, from: route, phase: plan.input ? 'input' : 'q', card: 0 };
     window.scrollTo(0, 0);
     renderLesson();
+  }
+
+
+  // ===== インプット（レッスンの前に読む・聴く） =====
+  const rich = (t) => esc(t).replace(/\*\*(.+?)\*\*/g, '<mark>$1</mark>');
+  function miniPiano(keys) {
+    const whites = [60, 62, 64, 65, 67, 69, 71, 72, 74, 76];
+    const blacks = { 61: 10, 63: 20, 66: 40, 68: 50, 70: 60, 73: 80, 75: 90 };
+    const w = whites.map((m) => `<span class="wkey ${keys.includes(m) ? 'sel' : ''}" data-tone="${m}">${m % 12 === 0 ? '<span class="c">C</span>' : ''}</span>`).join('');
+    const bl = Object.entries(blacks).map(([m, l]) => `<span class="bkey ${keys.includes(+m) ? 'sel' : ''}" data-tone="${m}" style="left:${l}%"></span>`).join('');
+    return `<div class="piano mini" aria-hidden="true">${w}${bl}</div>`;
+  }
+  function cardHTML(card, ci) {
+    const demos = (card.demo || []).map((d, di) => `<button class="demo" data-demo="${ci}:${di}"><span class="pb">${ic('play')}</span><span class="dl">${esc(d.label)}</span><span class="tm">${ic('volume')}</span></button>`).join('');
+    return `<section class="incard"><h3>${esc(card.h)}</h3><p>${rich(card.b)}</p>${card.keys ? miniPiano(card.keys) : ''}${demos ? `<div class="demos">${demos}</div>` : ''}</section>`;
+  }
+  function bindCards(root, cards) {
+    root.querySelectorAll('[data-demo]').forEach((b) => b.onclick = () => {
+      const [ci, di] = b.dataset.demo.split(':').map(Number);
+      const d = cards[ci].demo[di];
+      Sound.unlock();
+      if (d.beat) Sound.beat(d.beat, d.sec); else Sound.play(d.play, { gap: d.gap || 0.6 });
+      root.querySelectorAll('.demo.on').forEach((n) => n.classList.remove('on'));
+      b.classList.add('on'); setTimeout(() => b.classList.remove('on'), 1600);
+    });
+    root.querySelectorAll('[data-tone]').forEach((k) => k.onclick = () => { Sound.unlock(); Sound.note(+k.dataset.tone); });
+  }
+  function renderInput() {
+    const u = unitOf(L.id), part = u.parts[L.s], b = BOOKS[L.book];
+    const n = part.cards.length, card = part.cards[L.card], last = L.card >= n - 1;
+    const seen = S.seen[L.id + ':' + L.s];
+    const link = u.links[part.link];
+    app.innerHTML = `<div class="lesson b-${b.color}">
+      <div class="lhead"><div class="lhead-in">
+        <button class="x" data-quit aria-label="やめる">${ic('x')}</button>
+        <span class="where">${esc(`${b.name} › ${u.title} › レッスン${L.s + 1}`)}</span>
+      </div><div class="lbar"><i style="width:${(L.card + 1) / n * 100}%"></i></div></div>
+      <div class="qwrap" id="qa">
+        <div class="qband"><span class="en">INPUT</span>${esc(u.notes[L.s][0])}<span class="en" style="margin-left:8px">${L.card + 1}/${n}</span></div>
+        ${cardHTML(card, 0)}
+        <a class="srclink" href="${link[1]}" target="_blank" rel="noopener">${ic('book')}本編「${esc(link[0])}」で読む</a>
+      </div>
+      <div class="fbar"><div class="in-nav">
+        ${L.card > 0 ? `<button class="lnk" id="prev">前へ</button>` : '<span></span>'}
+        <button class="cbtn" id="go">${last ? '問題へ' : 'Continue'}${ic('signpost')}</button>
+      </div>${seen && !last ? '<button class="lnk skip" id="skip">読んだことがある → 問題へ</button>' : ''}</div>
+    </div>`;
+    bindCards($('#qa'), [card]);
+    const toQ = () => { S.seen[L.id + ':' + L.s] = 1; save(); L.phase = 'q'; window.scrollTo(0, 0); renderLesson(); };
+    $('#go').onclick = () => { if (last) toQ(); else { L.card++; window.scrollTo(0, 0); renderInput(); } };
+    const pv = $('#prev'); if (pv) pv.onclick = () => { L.card--; window.scrollTo(0, 0); renderInput(); };
+    const sk = $('#skip'); if (sk) sk.onclick = toQ;
+    $('[data-quit]').onclick = () => { Sound.stop(); const r = L.from; L = null; go(r); };
+  }
+  function inputSheet(uIdx, partIdx) {
+    const u = UNITS[uIdx], part = u.parts[partIdx], link = u.links[part.link];
+    const el = sheet(`<div class="sheet-in b-${BOOKS[u.book].color}">
+      <div class="qband"><span class="en">INPUT</span>${esc(u.notes[partIdx][0])}</div>
+      ${part.cards.map((c, i) => cardHTML(c, i)).join('')}
+      <a class="srclink" href="${link[1]}" target="_blank" rel="noopener">${ic('book')}本編「${esc(link[0])}」で読む</a>
+      <button class="cbtn block" data-close>問題にもどる${ic('signpost')}</button></div>`);
+    bindCards(el, part.cards);
   }
 
   // ===== レッスン画面 =====
   const usesHearts = () => L.mode === 'lesson' || L.mode === 'gate';
 
   function renderLesson() {
+    if (L.phase === 'input') return renderInput();
     const cur = L.queue[L.i];
     const q = cur.q;
     L.sel = (q.t === 'key' || q.t === 'order') ? [] : null;
@@ -524,7 +589,9 @@
     fbar.classList.add('on', ok ? 'ok' : 'ng');
     $('#fb').innerHTML = `<div class="fb-h">${ok ? '正解' : '不正解'}</div>
       ${ok ? '' : `<div class="fb-a">正解は <mark>${esc(answer)}</mark></div>`}
-      ${q.ex ? `<div class="fb-cp"><h5>${ic('signpost')}Check Point</h5><p>${esc(q.ex)}</p></div>` : ''}`;
+      ${q.ex ? `<div class="fb-cp"><h5>${ic('signpost')}Check Point</h5><p>${esc(q.ex)}</p></div>` : ''}
+      ${ok ? '' : (() => { const u = UNITS[q.u], lk = u.links[u.parts[q.part].link]; return `<div class="fb-more"><button data-reinput="${q.u}:${q.part}">${ic('redo')}インプットを見直す</button><a href="${lk[1]}" target="_blank" rel="noopener">${ic('book')}本編「${esc(lk[0])}」を読む</a></div>`; })()}`;
+    const ri = $('[data-reinput]'); if (ri) ri.onclick = () => { const [a, b] = ri.dataset.reinput.split(':').map(Number); inputSheet(a, b); };
     const g = $('#go');
     g.disabled = false;
     g.innerHTML = `Continue${ic('signpost')}`;
