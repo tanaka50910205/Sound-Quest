@@ -84,9 +84,6 @@ mark { background: linear-gradient(transparent 0, var(--marker) 0); color: inher
 .hstat .i { width: 16px; height: 16px; }
 .hstat.on { color: var(--prep); }
 .hstat.on .i { fill: var(--prep); }
-.hstat.heart { color: var(--gw); }
-.hstat.heart .i { fill: var(--gw); }
-.hstat.heart.zero .i { fill: none; }
 .menu-btn { width: 44px; height: 44px; display: grid; place-items: center; margin-right: -8px; }
 .menu-btn .i { width: 26px; height: 26px; stroke-width: 1.6; }
 

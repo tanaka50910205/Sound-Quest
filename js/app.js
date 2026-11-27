@@ -6,7 +6,6 @@
   const ICON = {
     flame: '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
     zap: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
-    heart: '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
     x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
     check: '<path d="M20 6 9 17l-5-5"/>',
     menu: '<path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h10"/>',
@@ -39,15 +38,12 @@
 
   // ===== 保存 =====
   const KEY = 'otomichi.v2';
-  const MAX_HEARTS = 5;
-  const HEART_MS = 20 * 60 * 1000; // 20分で1つ回復
   const STEPS = 3;                 // 1ユニット＝レッスン3つ
   const GATE_Q = 10;               // ゲートウェイの問題数
   const EN = { intro: 'INTRO', prep: 'PRE', melody: 'MELODY', chord: 'CHORD', rhythm: 'RHYTHM' };
 
   const fresh = () => ({
     xp: 0, days: {}, streak: 0, lastDay: null,
-    hearts: MAX_HEARTS, heartTs: Date.now(),
     progress: {}, missed: {}, seen: {}, answered: 0, correct: 0, lessons: 0,
     settings: { vol: 0.7, theme: 'auto', goal: 30 }
   });
@@ -64,16 +60,6 @@
   const liveStreak = () => (S.lastDay === dayKey() || S.lastDay === shiftDay(-1)) ? S.streak : 0;
   const todayXp = () => S.days[dayKey()] || 0;
 
-  function regenHearts() {
-    if (S.hearts >= MAX_HEARTS) { S.heartTs = Date.now(); return; }
-    const gained = Math.floor((Date.now() - S.heartTs) / HEART_MS);
-    if (gained > 0) {
-      S.hearts = Math.min(MAX_HEARTS, S.hearts + gained);
-      S.heartTs = S.hearts >= MAX_HEARTS ? Date.now() : S.heartTs + gained * HEART_MS;
-      save();
-    }
-  }
-  const nextHeartMin = () => Math.max(1, Math.ceil((HEART_MS - (Date.now() - S.heartTs)) / 60000));
 
   function applyTheme() {
     const t = S.settings.theme;
@@ -112,7 +98,6 @@
   function go(r) { route = r; L = null; render(); window.scrollTo(0, 0); }
 
   function render() {
-    regenHearts();
     if (L) return renderLesson();
     const views = { home: viewHome, unit: viewUnit, gate: viewGate, review: viewReview, stats: viewStats };
     app.innerHTML = header() + views[route.v]() + footer();
@@ -124,7 +109,6 @@
     return `<header class="header">
       <button class="logo" data-nav="home" aria-label="目次へ"><img class="sq-logo lt" src="${SQA.logo}" alt="SoundQuest"><img class="sq-logo dk" src="${SQA.logoWhite}" alt="SoundQuest"><span class="drill">ドリル</span></button>
       <span class="hstat ${st && S.lastDay === dayKey() ? 'on' : ''}" aria-label="連続${st}日">${ic('flame')}${st}</span>
-      <span class="hstat heart ${S.hearts ? '' : 'zero'}" aria-label="ハート${S.hearts}">${ic('heart')}${S.hearts}</span>
       <button class="menu-btn" data-menu aria-label="メニュー">${ic('menu')}</button>
     </header>`;
   }
@@ -216,14 +200,13 @@
       <div class="hr"></div>
       <div class="chips">${u.tags.map((t) => `<span class="chip">${esc(t)}</span>`).join('')}</div>
       <div class="tocbox"><p>レッスン</p>${rows}</div>
-      ${S.hearts ? '' : heartsNote()}
       <div class="band"><img class="qg" src="${SQA.q}" alt="Q"><span class="en">1.</span>ポイント</div>
       <h3>${esc(n1[0])}</h3><p>${hl(n1[1], u.tags)}</p>
       <h3>${esc(n2[0])}</h3><p>${hl(n2[1], u.tags)}</p>
       <div class="checkpoint"><h5>${ic('signpost')}Check Point</h5><p><b>${esc(n3[0])}</b>　${hl(n3[1], u.tags)}</p></div>
       <div class="band"><img class="qg" src="${SQA.q}" alt="Q"><span class="en">2.</span>記事を読む</div>
       <div class="reads">${u.links.map(([t, url]) => `<a href="${url}" target="_blank" rel="noopener">${ic('ext')}<span>${esc(t)}</span><em>SoundQuest</em></a>`).join('')}</div>
-      ${isOpen(it) && S.hearts ? `<div class="continue"><button class="cbtn" data-start="${u.id}:${next}">${isDone(it) ? 'もう一度' : `レッスン${next + 1}へ`}${ic('signpost')}</button></div>` : ''}
+      ${isOpen(it) ? `<div class="continue"><button class="cbtn" data-start="${u.id}:${next}">${isDone(it) ? 'もう一度' : `レッスン${next + 1}へ`}${ic('signpost')}</button></div>` : ''}
     </main>`;
   }
 
@@ -238,13 +221,8 @@
       <div class="chips">${us.map((u) => `<span class="chip">${esc(u.title)}</span>`).join('')}</div>
       <p style="margin-top:32px">${b.name}の内容をきちんと理解できているかを確かめるテスト場です。上のユニット全体から${GATE_Q}問。ここを通過してから先へ進むと安心です。</p>
       ${isDone(it) ? '<div class="checkpoint"><h5>' + ic('signpost') + 'Check Point</h5><p>このゲートウェイは通過済みです。もう一度挑むこともできます。</p></div>' : ''}
-      ${S.hearts ? `<div class="continue"><button class="cbtn" data-gate="${it.id}">挑戦する${ic('signpost')}</button></div>` : heartsNote()}
+      <div class="continue"><button class="cbtn" data-gate="${it.id}">挑戦する${ic('signpost')}</button></div>
     </main>`;
-  }
-
-  function heartsNote() {
-    return `<div class="checkpoint"><h5>${ic('signpost')}Check Point</h5><p>ハートがありません。あと${nextHeartMin()}分で1つ回復します。<mark>復習を終えると、すぐに1つ戻ります。</mark></p>
-      <div style="margin-top:16px"><button class="cbtn sm" data-review>復習する${ic('signpost')}</button></div></div>`;
   }
 
   // --- 復習 ---
@@ -261,7 +239,7 @@
       <div class="crumb"><button data-nav="home">目次</button>›<span>復習</span></div>
       <h1>復習</h1>
       <div class="hr"></div>
-      <p>まちがえた問題を中心に出します。復習を終えると<mark>ハートが1つ回復</mark>します。</p>
+      <p>まちがえた問題を中心に出します。<mark>何回でも</mark>やり直せます。</p>
       <div class="band"><img class="qg" src="${SQA.q}" alt="Q"><span class="en">1.</span>苦手な問題</div>
       ${ids.length ? list : `<p style="color:var(--ink-2)">${doneAny ? 'まちがえた問題はありません。クリアしたところから出します。' : 'まずは目次から、レッスンをひとつ進めてみましょう。'}</p>`}
       <div class="continue" style="display:grid;gap:16px;justify-items:start">
@@ -385,7 +363,6 @@
   function startLesson(plan) {
     Sound.init(); // ボタンを押した瞬間に音の準備（iPhoneの決まり）
     if (!plan.items.length) { toast('出せる問題がまだありません'); return; }
-    if ((plan.mode === 'lesson' || plan.mode === 'gate') && !S.hearts) { toast(`ハートがありません。あと${nextHeartMin()}分で回復します`); return; }
     closeSheet();
     L = { ...plan, queue: plan.items.map((id) => ({ id, q: makeQ(id), retry: false })), total: plan.items.length, solved: 0, i: 0, n: 0, firstTry: 0, mistakes: 0, start: Date.now(), sel: null, checked: false, from: route, phase: plan.input ? 'input' : 'q', card: 0 };
     window.scrollTo(0, 0);
@@ -455,7 +432,7 @@
   }
 
   // ===== レッスン画面 =====
-  const usesHearts = () => L.mode === 'lesson' || L.mode === 'gate';
+  const isTest = () => L.mode === 'lesson' || L.mode === 'gate';
 
   function renderLesson() {
     if (L.phase === 'input') return renderInput();
@@ -471,7 +448,6 @@
       <div class="lhead"><div class="lhead-in">
         <button class="x" data-quit aria-label="やめる">${ic('x')}</button>
         <span class="where">${esc(where)}</span>
-        ${usesHearts() ? `<span class="hstat heart ${S.hearts ? '' : 'zero'}">${ic('heart')}${S.hearts}</span>` : ''}
       </div><div class="lbar"><i style="width:${L.solved / L.total * 100}%"></i></div></div>
       <div class="qwrap" id="qa">
         <div class="qband"><img class="qg" src="${SQA.q}" alt="Q"><span class="en">${L.n}.</span>${cur.retry ? 'もう一度' : kind}</div>
@@ -576,11 +552,10 @@
     if (ok) {
       S.correct++; L.solved++;
       if (!cur.retry) L.firstTry++;
-      if (!usesHearts() && S.missed[q.id]) { S.missed[q.id]--; if (S.missed[q.id] <= 0) delete S.missed[q.id]; }
+      if (!isTest() && S.missed[q.id]) { S.missed[q.id]--; if (S.missed[q.id] <= 0) delete S.missed[q.id]; }
     } else {
       L.mistakes++;
       S.missed[q.id] = (S.missed[q.id] || 0) + 1;
-      if (usesHearts()) { if (S.hearts === MAX_HEARTS) S.heartTs = Date.now(); S.hearts = Math.max(0, S.hearts - 1); }
       L.queue.push({ id: q.id, q: makeQ(q.id), retry: true }); // まちがえた問題は最後にもう一度
     }
     save();
@@ -596,18 +571,11 @@
     g.disabled = false;
     g.innerHTML = `Continue${ic('signpost')}`;
     const bar = $('.lbar i'); if (bar) bar.style.width = (L.solved / L.total * 100) + '%';
-    const h = $('.lhead .heart'); if (h) { h.innerHTML = ic('heart') + S.hearts; h.classList.toggle('zero', !S.hearts); }
     g.focus();
   }
 
   function next() {
     Sound.stop();
-    if (usesHearts() && S.hearts <= 0 && L.solved < L.total) {
-      const r = L.from; L = null; go(r);
-      sheet(`<h2>ハートがなくなりました</h2><p>あと${nextHeartMin()}分で1つ回復します。復習を終えると、すぐに1つ戻ります。</p>
-        <button class="cbtn block" data-review>復習する${ic('signpost')}</button><button class="lnk" data-close>あとでやる</button>`);
-      return;
-    }
     L.i++;
     if (L.i >= L.queue.length) return finish();
     window.scrollTo(0, 0);
@@ -626,7 +594,6 @@
     let unitDone = false;
     if (L.mode === 'lesson') { if (prog(L.id) === L.s) { S.progress[L.id] = L.s + 1; unitDone = L.s + 1 === STEPS; } }
     else if (L.mode === 'gate') S.progress[L.id] = 1;
-    else if (S.hearts < MAX_HEARTS) { S.hearts++; if (S.hearts >= MAX_HEARTS) S.heartTs = Date.now(); }
     save();
     const sec = Math.round((Date.now() - L.start) / 1000);
     const acc = Math.round(L.firstTry / L.total * 100);
@@ -637,7 +604,6 @@
     const sums = [];
     if (u) u.notes.forEach(([h]) => sums.push(h));
     if (L.mode === 'gate') sums.push(`${b.name}の内容を確かめました。次の編へ進めます。`);
-    if (L.mode === 'review' || L.mode === 'ear') sums.push('ハートが1つ回復しました。');
     if (goalJust) sums.push('今日の目標を達成しました。');
     sums.push(perfect ? 'ノーミスでした。' : `まちがえた問題は「復習」に入っています。`);
     const nextR = L.mode === 'lesson' ? { v: 'unit', id: L.id } : L.mode === 'gate' ? { v: 'home' } : { v: 'review' };
@@ -699,13 +665,6 @@
     requestAnimationFrame(() => { const n = $('#cur'); if (n) { const y = n.getBoundingClientRect().top + window.scrollY - window.innerHeight / 3; window.scrollTo(0, Math.max(0, y)); } });
   }
 
-  // ハートの回復をときどき確認
-  setInterval(() => {
-    if (L || document.querySelector('.scrim, .menu')) return;
-    const before = S.hearts;
-    regenHearts();
-    if (S.hearts !== before) render();
-  }, 30000);
 
   render();
   if (PATH.some((p) => prog(p.id) > 0)) scrollToCurrent();
